@@ -38,7 +38,36 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Run the view's session
         sceneView.session.run(configuration)
+        
+        let topGesture = UITapGestureRecognizer(target:self, action:#selector(ViewController.handleTap(gestureRecognizer:)))
+        
+        view.addGestureRecognizer(topGesture)
+        
     }
+    
+    @objc
+    func handleTap(gestureRecognizer:UITapGestureRecognizer)  {
+        guard let currentFrame = sceneView.session.currentFrame else {
+            return
+        }
+        
+        let imagePlan = SCNPlane(width: sceneView.bounds.width/6000, height: sceneView.bounds.height/6000)
+        
+        imagePlan.firstMaterial?.diffuse.contents = sceneView.snapshot()
+        imagePlan.firstMaterial?.lightingModel = .constant
+        
+        let planNode = SCNNode(geometry: imagePlan)
+        sceneView.scene.rootNode.addChildNode(planNode)
+        
+        var translate = matrix_identity_float4x4
+        translate.columns.3.z = -0.1 // 10公分
+        planNode.simdTransform = matrix_multiply(currentFrame.camera.transform, translate)
+        
+        
+        
+    }
+    
+    
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
